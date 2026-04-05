@@ -410,12 +410,22 @@ async function doLogout() {
 }
 
 // ===== Login Mode Toggle =====
-function switchLoginMode(mode) {
+async function switchLoginMode(mode) {
     const qrPanel = document.getElementById('loginPanelQr');
     const phonePanel = document.getElementById('loginPanelPhone');
     const qrBtn = document.getElementById('toggleQrBtn');
     const phoneBtn = document.getElementById('togglePhoneBtn');
     const qrArea = document.getElementById('qrArea');
+
+    try {
+        await fetch('/api/login/mode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode })
+        });
+    } catch (e) {
+        console.error('Gagal update mode:', e);
+    }
 
     if (mode === 'qr') {
         qrPanel.style.display = 'block';

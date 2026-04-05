@@ -122,6 +122,7 @@ let isReady = false;
 let latestQrDataUrl = null;
 let monitorOn = false;
 let incomingMessages = []; // buffer pesan masuk (max 100)
+let phoneLoginMode = true; // Default: pairing code mode (bukan QR)
 
 function createClient() {
     client = new Client({
@@ -146,6 +147,7 @@ function createClient() {
     });
 
     client.on('qr', async (qr) => {
+        if (phoneLoginMode) return; // Abaikan QR jika sedang dalam mode nomor HP
         qrcode.generate(qr, { small: true });
         try {
             latestQrDataUrl = await QRCode.toDataURL(qr, { width: 300 });
@@ -399,8 +401,23 @@ setInterval(async () => {
 
 // Status (QR + ready)
 app.get('/api/status', (req, res) => {
-    res.json({ ready: isReady, qr: latestQrDataUrl });
+    res.json({ ready: isReady, qr: latestQrDataUrl, phoneLoginMode });
 });
+
+// Set login mode (qr or phone)
+app.post('/api/login/mode', (req, res) => {
+    const { mode } = req.body;
+    if (mode === 'phone') {
+        phoneLoginMode = true;
+        latestQrDataUrl = null; // Bersihkan QR yang ada
+        console.log('📞 Mode login diubah ke: Nomor HP (QR dimatikan)');
+    } else {
+        phoneLoginMode = false;
+        console.log('📷 Mode login diubah ke: Scan QR');
+    }
+    res.json({ ok: true, phoneLoginMode });
+});
+
 
 // Login with Phone Number (Pairing Code)
 app.post('/api/login/pair', async (req, res) => {

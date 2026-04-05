@@ -28,17 +28,17 @@
         <!-- Toggle Pilihan Metode Login -->
         <div style="display:flex; justify-content:center; gap:0; margin-bottom:16px; border-radius:8px; overflow:hidden; border:1px solid #ddd; width:fit-content; margin-left:auto; margin-right:auto;">
             <button id="toggleQrBtn" onclick="switchLoginMode('qr')"
-                style="padding:8px 20px; border:none; cursor:pointer; font-weight:600; font-size:13px; background:#008b5e; color:white; transition:all 0.2s;">
+                style="padding:8px 20px; border:none; cursor:pointer; font-weight:600; font-size:13px; background:#f1f5f9; color:#555; transition:all 0.2s;">
                 📷 Scan QR
             </button>
             <button id="togglePhoneBtn" onclick="switchLoginMode('phone')"
-                style="padding:8px 20px; border:none; cursor:pointer; font-weight:600; font-size:13px; background:#f1f5f9; color:#555; transition:all 0.2s;">
+                style="padding:8px 20px; border:none; cursor:pointer; font-weight:600; font-size:13px; background:#0ea5e9; color:white; transition:all 0.2s;">
                 📞 Nomor HP
             </button>
         </div>
 
         <!-- Panel: QR Code Instructions -->
-        <div id="loginPanelQr">
+        <div id="loginPanelQr" style="display:none;">
             <h3 style="margin-bottom:8px;">📱 Cara Login dengan QR Code</h3>
             <p class="hint">Scan QR Code di atas menggunakan WhatsApp di HP Anda:</p>
             <ol style="text-align:left; max-width:320px; margin:10px auto; font-size:14px; line-height:1.8;">
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Panel: Phone Number Login -->
-        <div id="loginPanelPhone" style="display:none;">
+        <div id="loginPanelPhone">
             <h3 style="margin-bottom:8px;">🔑 Login dengan Nomor HP</h3>
             <p class="hint">Masukkan nomor WhatsApp Anda (dengan awalan 62).</p>
             <div style="display:flex; justify-content:center; gap:8px; margin-top:10px;">
