@@ -747,3 +747,26 @@ function toast(msg, type) {
     const el = document.createElement('div'); el.className = 'toast toast-' + type; el.textContent = msg;
     document.body.appendChild(el); setTimeout(() => el.remove(), 3000);
 }
+
+// Fitur Auto Update Server
+async function triggerSystemUpdate() {
+    const isConfirm = confirm("⚠️ PERINGATAN: Anda akan menarik kode terbaru dari Github dan me-restart mesin server Google Cloud.\n\nWebsite akan mati sementara sekitar 5-10 detik. Lanjutkan?");
+    if (!isConfirm) return;
+
+    toast('🔄 Mengirim perintah update...', 'info');
+    
+    try {
+        const res = await fetch('/api/system-update', { method: 'POST' });
+        
+        // Peringatan bahwa website mati sementara
+        toast('⏳ Server sedang me-restart, halaman memuat ulang...', 'success');
+        
+        // Setelah 8 detik, paksa reload halaman untuk melihat hasil barunya
+        setTimeout(() => {
+            window.location.reload(true);
+        }, 8000);
+        
+    } catch (err) {
+        toast('❌ Gagal menghubungi server saat update', 'error');
+    }
+}

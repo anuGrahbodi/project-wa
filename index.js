@@ -6,6 +6,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const { exec } = require('child_process');
 
 async function sendLogoutAlert() {
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
@@ -746,6 +747,23 @@ app.post('/api/logout', async (req, res) => {
         console.error('❌ Terjadi error fatal saat logout:', err);
         res.status(500).json({ error: 'Gagal memproses logout: ' + err.message });
     }
+});
+
+// ===== System Update Route =====
+app.post('/api/system-update', (req, res) => {
+    console.log('🔄 Menerima perintah Auto-Update dari web...');
+    
+    // Command untuk menarik kode baru dan restart VM
+    const command = 'git pull origin main && pm2 restart bot-wa --update-env';
+    
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`❌ Gagal Update: ${error.message}`);
+            return res.status(500).json({ error: error.message });
+        }
+        console.log(`✅ Update Berhasil:\n${stdout}`);
+        res.json({ ok: true, output: stdout });
+    });
 });
 
 // ===== Start =====

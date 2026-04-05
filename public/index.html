@@ -15,7 +15,10 @@
     <h2>📨 Formulir Kirim Pesan ke Grup</h2>
     <div class="top-bar">
         <div class="status-text">Status Bot WA: <strong><span id="statusText">Loading...</span></strong></div>
-        <button class="btn btn-red btn-sm" id="logoutBtn" onclick="doLogout()" style="display:none">🚪 Logout</button>
+        <div style="display:flex; gap:8px;">
+            <button class="btn btn-sm" onclick="triggerSystemUpdate()" style="background:#f59e0b; color:white; border:none;">🔄 Update Server</button>
+            <button class="btn btn-red btn-sm" id="logoutBtn" onclick="doLogout()" style="display:none">🚪 Logout</button>
+        </div>
     </div>
     <div id="qrArea"></div>
 
