@@ -8,47 +8,46 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 
 async function sendLogoutAlert() {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.log('⚠️ Email alert dilewati karena EMAIL_USER/EMAIL_PASS belum diatur di .env');
+    const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    if (!webhookUrl) {
+        console.log('⚠️ Discord alert dilewati karena DISCORD_WEBHOOK_URL belum diatur di .env');
         return;
     }
-    const targetEmail = 'anugrahsahabatkita@gmail.com';
+    
     const publicUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
     
-    let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
-
-    const mailOptions = {
-        from: `WhatsApp Bot Alert <${process.env.EMAIL_USER}>`,
-        to: targetEmail,
-        subject: '⚠️ Peringatan: Bot WhatsApp Terputus (Logout)',
-        html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                <h2 style="color: #e53e3e;">Bot WhatsApp Terputus (Logout)</h2>
-                <p>Halo,</p>
-                <p>Sistem mendeteksi bahwa Bot WhatsApp Anda telah keluar (logout) dari server. Jadwal pesan otomatis Anda mungkin akan gagal terkirim.</p>
-                <p>Silakan segera hubungkan kembali nomor WhatsApp Anda dengan menekan tombol Login di bawah ini dan memindai QR Code (atau via nomor HP).</p>
-                <br>
-                <a href="${publicUrl}" style="background-color: #3182ce; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Masuk ke Dashboard Bot</a>
-                <br><br>
-                <p>Jika tombol di atas tidak bekerja, silakan akses URL ini langsung: <a href="${publicUrl}">${publicUrl}</a></p>
-                <br>
-                <hr style="border:none; border-top:1px solid #eee; margin-top:30px;">
-                <p style="font-size:12px; color:#999;">Email ini diklaim dan dikirim secara otomatis oleh sistem keamanan WhatsApp Bot.</p>
-            </div>
-        `
+    const payload = {
+        content: "🚨 **WHATSAPP DISCONNECTED** 🚨\n\nMesin menyadari bahwa sesi WhatsApp Anda terlempar atau kehilangan koneksi. Segera lakukan pengecekan.\n\n@everyone",
+        username: "WhatsApp Bot Monitor",
+        avatar_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/512px-WhatsApp.svg.png",
+        embeds: [
+            {
+                title: "⚠️ Peringatan: Bot WhatsApp Terputus (Logout)",
+                description: "**Status:** Disconnected / Auth Failure\n\nSistem Google Cloud mendeteksi bahwa Bot WhatsApp Anda telah terputus (logout). Jadwal pesan otomatis Anda mungkin gagal terkirim.\n\nSilakan segera hubungkan kembali nomor WhatsApp Anda dengan mengklik tautan Login di bawah ini dan memindai QR Code.",
+                color: 15158332,
+                fields: [
+                    {
+                        name: "🔗 Tautan Buka Dashboard",
+                        value: `[Klik di sini untuk Buka System](${publicUrl})`
+                    }
+                ],
+                footer: {
+                    text: "Diklaim dan dikirim secara otomatis oleh WhatsApp Bot Security."
+                },
+                timestamp: new Date().toISOString()
+            }
+        ]
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log('📧 Berhasil mengirim email peringatan logout ke:', targetEmail);
+        await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        console.log('💬 Berhasil mengirim peringatan logout ke Discord!');
     } catch (err) {
-        console.error('❌ Gagal mengirim email alert:', err.message);
+        console.error('❌ Gagal mengirim Discord alert:', err.message);
     }
 }
 const app = express();
