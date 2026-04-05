@@ -460,26 +460,28 @@ app.post('/api/login/pair', async (req, res) => {
 
         console.log('📱 Meminta pairing code untuk:', formattedPhone);
         
-        // SUNTIKKAN FUNGSI PENYELAMAT DARI DALAM BROWSER
-        await client.pupPage.evaluate(() => {
-            if (!window._backupOnCode) {
-                window._backupOnCode = true;
-                const original = window.onCodeReceivedEvent;
-                window.onCodeReceivedEvent = function(code) {
-                    window.__SAFE_CODE_CAPTURE = code;
-                    if (original) original(code);
-                };
-            }
-        });
+        // SUNTIKKAN FUNGSI PENYELAMAT DARI NODEJS
+        global._interceptedPairingCode = null;
+        try {
+            await client.pupPage.exposeFunction('onCodeReceivedEvent', (c) => {
+                console.log('🔗 Intercepted via exposeFunction! KODE ASLI:', c);
+                global._interceptedPairingCode = c;
+            });
+        } catch (e) {
+            // Function is already exposed from a previous request, that's fine.
+            // But we can reset the global variable.
+        }
 
         let code = await client.requestPairingCode(formattedPhone);
         
-        // JIKA NULL/UNDEFINED, EKSTRAK PAKSA DARI BROWSER
+        // JIKA NULL/UNDEFINED, EKSTRAK PAKSA DARI GLOBAL
         if (!code) {
-             console.log('⚠️ Kode dari library kosong, mencoba mengambil paksa dari brankas browser...');
+             console.log('⚠️ Kode dari library kosong, menunggu hasil sadapan Node.js...');
              for (let i = 0; i < 15; i++) {
-                 code = await client.pupPage.evaluate(() => window.__SAFE_CODE_CAPTURE);
-                 if (code) break;
+                 if (global._interceptedPairingCode) {
+                     code = global._interceptedPairingCode;
+                     break;
+                 }
                  await new Promise(r => setTimeout(r, 1000));
              }
         }
