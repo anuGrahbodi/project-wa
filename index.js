@@ -156,7 +156,7 @@ function createClient() {
         authStrategy: new LocalAuth(),
         webVersionCache: {
             type: 'remote',
-            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2409.2.html'
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
         },
         pairWithPhoneNumber: {
             phoneNumber: '' // Ini WAJIB agar whatsapp-web.js menyuntikkan onCodeReceivedEvent ke browser
