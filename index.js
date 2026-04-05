@@ -468,22 +468,28 @@ app.post('/api/login/pair', async (req, res) => {
                 global._interceptedPairingCode = c;
             });
         } catch (e) {
-            // Function is already exposed from a previous request, that's fine.
-            // But we can reset the global variable.
+            // Abaikan jika sudah diekspos sebelumnya
         }
 
-        let code = await client.requestPairingCode(formattedPhone);
+        // TEMBAK LANGSUNG KE JANTUNG WA WEB (BYPASS LIBRARY)
+        console.log('🚀 Mengeksekusi pairingCode langsung di browser...');
+        await client.pupPage.evaluate((phoneNumber) => {
+            window.WWebJS.pairingCode(phoneNumber);
+        }, formattedPhone);
         
-        // JIKA NULL/UNDEFINED, EKSTRAK PAKSA DARI GLOBAL
+        // TUNGGU KODE SADAPAN MASUK
+        let code = null;
+        console.log('⏳ Menunggu hasil sadapan Node.js...');
+        for (let i = 0; i < 15; i++) {
+            if (global._interceptedPairingCode) {
+                code = global._interceptedPairingCode;
+                break;
+            }
+            await new Promise(r => setTimeout(r, 1000));
+        }
+
         if (!code) {
-             console.log('⚠️ Kode dari library kosong, menunggu hasil sadapan Node.js...');
-             for (let i = 0; i < 15; i++) {
-                 if (global._interceptedPairingCode) {
-                     code = global._interceptedPairingCode;
-                     break;
-                 }
-                 await new Promise(r => setTimeout(r, 1000));
-             }
+            throw new Error('Timeout: Menunggu kode dari WhatsApp terlalu lama.');
         }
         
         console.log('✅ KODE PAIRING BERHASIL DIDAPATKAN:', code);
