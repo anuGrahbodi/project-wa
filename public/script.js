@@ -409,6 +409,33 @@ async function doLogout() {
     btn.disabled = false; btn.textContent = '🚪 Logout';
 }
 
+// ===== Login Mode Toggle =====
+function switchLoginMode(mode) {
+    const qrPanel = document.getElementById('loginPanelQr');
+    const phonePanel = document.getElementById('loginPanelPhone');
+    const qrBtn = document.getElementById('toggleQrBtn');
+    const phoneBtn = document.getElementById('togglePhoneBtn');
+
+    if (mode === 'qr') {
+        qrPanel.style.display = 'block';
+        phonePanel.style.display = 'none';
+        qrBtn.style.background = '#008b5e';
+        qrBtn.style.color = 'white';
+        phoneBtn.style.background = '#f1f5f9';
+        phoneBtn.style.color = '#555';
+    } else {
+        qrPanel.style.display = 'none';
+        phonePanel.style.display = 'block';
+        phoneBtn.style.background = '#0ea5e9';
+        phoneBtn.style.color = 'white';
+        qrBtn.style.background = '#f1f5f9';
+        qrBtn.style.color = '#555';
+        // Reset pairing result
+        document.getElementById('pairingCodeResult').style.display = 'none';
+    }
+}
+
+
 // ===== Mode Toggle & Private Sending State =====
 let isPrivateSending = false;
 let cancelPrivateSend = false;

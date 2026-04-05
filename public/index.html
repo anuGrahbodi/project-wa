@@ -22,17 +22,50 @@
     </div>
     <div id="qrArea"></div>
 
-    <!-- INSTRUKSI SCAN QR -->
+    <!-- LOGIN AREA dengan Toggle -->
     <div id="phoneLoginArea" class="section" style="display:none; text-align:center; padding-bottom:15px;">
-        <h3 style="margin-bottom:8px;">📱 Cara Login dengan QR Code</h3>
-        <p class="hint">Scan QR Code di atas menggunakan WhatsApp di HP Anda:</p>
-        <ol style="text-align:left; max-width:320px; margin:10px auto; font-size:14px; line-height:1.8;">
-            <li>Buka <strong>WhatsApp</strong> di HP</li>
-            <li>Ketuk <strong>titik tiga (⋮) → Perangkat Tertaut</strong></li>
-            <li>Ketuk <strong>"Tautkan Perangkat"</strong></li>
-            <li>Arahkan kamera ke <strong>QR Code di atas</strong></li>
-        </ol>
-        <p class="hint" style="color:#f59e0b; margin-top:8px;">⚠️ QR Code kadaluarsa tiap ~20 detik. Refresh halaman jika QR tidak ter-scan.</p>
+        
+        <!-- Toggle Pilihan Metode Login -->
+        <div style="display:flex; justify-content:center; gap:0; margin-bottom:16px; border-radius:8px; overflow:hidden; border:1px solid #ddd; width:fit-content; margin-left:auto; margin-right:auto;">
+            <button id="toggleQrBtn" onclick="switchLoginMode('qr')"
+                style="padding:8px 20px; border:none; cursor:pointer; font-weight:600; font-size:13px; background:#008b5e; color:white; transition:all 0.2s;">
+                📷 Scan QR
+            </button>
+            <button id="togglePhoneBtn" onclick="switchLoginMode('phone')"
+                style="padding:8px 20px; border:none; cursor:pointer; font-weight:600; font-size:13px; background:#f1f5f9; color:#555; transition:all 0.2s;">
+                📞 Nomor HP
+            </button>
+        </div>
+
+        <!-- Panel: QR Code Instructions -->
+        <div id="loginPanelQr">
+            <h3 style="margin-bottom:8px;">📱 Cara Login dengan QR Code</h3>
+            <p class="hint">Scan QR Code di atas menggunakan WhatsApp di HP Anda:</p>
+            <ol style="text-align:left; max-width:320px; margin:10px auto; font-size:14px; line-height:1.8;">
+                <li>Buka <strong>WhatsApp</strong> di HP</li>
+                <li>Ketuk <strong>titik tiga (⋮) → Perangkat Tertaut</strong></li>
+                <li>Ketuk <strong>"Tautkan Perangkat"</strong></li>
+                <li>Arahkan kamera ke <strong>QR Code di atas</strong></li>
+            </ol>
+            <p class="hint" style="color:#f59e0b; margin-top:8px;">⚠️ QR Code kadaluarsa tiap ~20 detik. Refresh halaman jika QR tidak ter-scan.</p>
+        </div>
+
+        <!-- Panel: Phone Number Login -->
+        <div id="loginPanelPhone" style="display:none;">
+            <h3 style="margin-bottom:8px;">🔑 Login dengan Nomor HP</h3>
+            <p class="hint">Masukkan nomor WhatsApp Anda (dengan awalan 62).</p>
+            <div style="display:flex; justify-content:center; gap:8px; margin-top:10px;">
+                <input type="text" id="loginPhoneInput" placeholder="Contoh: 62812345678" value="6285194398906"
+                    style="max-width:200px; text-align:center;" />
+                <button class="btn btn-blue" id="btnPair" onclick="requestPairingCode()">Dapatkan Kode</button>
+            </div>
+            <div id="pairingCodeResult"
+                style="display:none; margin-top:15px; background:#f4f4f5; padding:10px; border-radius:8px;">
+                <p style="margin:0; font-size:13px; color:#555;">Masukkan kode ini di menu <strong>Tautkan Perangkat → Tautkan dengan Nomor</strong> di HP Anda:</p>
+                <h2 id="pairingCodeText" style="margin:8px 0 0 0; letter-spacing:5px; color:#008b5e; font-size:32px;">...</h2>
+            </div>
+        </div>
+
     </div>
 
     <!-- MODE PENGIRIMAN -->
