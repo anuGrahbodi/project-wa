@@ -457,6 +457,7 @@ app.post('/api/login/pair', async (req, res) => {
 
         console.log('📱 Meminta pairing code untuk:', formattedPhone);
         const code = await client.requestPairingCode(formattedPhone);
+        console.log('✅ KODE PAIRING BERHASIL DIDAPATKAN:', code);
         res.json({ code });
     } catch (err) {
         console.error('❌ Gagal request pairing code:', err);
