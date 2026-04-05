@@ -166,12 +166,35 @@ function createClient() {
         console.log('✅ WhatsApp Web Client is ready!');
         isReady = true;
         latestQrDataUrl = null;
+
+        // ===== Heartbeat: cek koneksi setiap 30 detik =====
+        if (global._heartbeatInterval) clearInterval(global._heartbeatInterval);
+        global._heartbeatInterval = setInterval(async () => {
+            if (!isReady) return; // Sudah offline, skip
+            try {
+                const state = await client.getState();
+                if (state !== 'CONNECTED') {
+                    console.log('💔 Heartbeat: Terdeteksi TIDAK CONNECTED. State:', state);
+                    isReady = false;
+                    latestQrDataUrl = null;
+                    sendLogoutAlert();
+                    clearInterval(global._heartbeatInterval);
+                }
+            } catch (e) {
+                console.log('💔 Heartbeat: Gagal getState(), kemungkinan terputus.', e.message);
+                isReady = false;
+                latestQrDataUrl = null;
+                sendLogoutAlert();
+                clearInterval(global._heartbeatInterval);
+            }
+        }, 30000); // cek tiap 30 detik
     });
 
     client.on('disconnected', (reason) => {
         console.log('🔌 Client disconnected:', reason);
         isReady = false;
         latestQrDataUrl = null;
+        if (global._heartbeatInterval) clearInterval(global._heartbeatInterval);
         sendLogoutAlert();
     });
 
