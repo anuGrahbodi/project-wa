@@ -460,16 +460,22 @@ app.post('/api/login/pair', async (req, res) => {
 
         console.log('📱 Meminta pairing code untuk:', formattedPhone);
         
+        let interceptedCode = null;
         // SUNTIKKAN FUNGSI PENYELAMAT: whatsapp-web.js lupa mengekspos fungsi ini jika tidak dideklarasi di awal
         try {
-            await client.pupPage.exposeFunction('onCodeReceivedEvent', (code) => {
-                console.log('Intercepted via exposeFunction!');
+            await client.pupPage.exposeFunction('onCodeReceivedEvent', (c) => {
+                console.log('🔗 Intercepted via exposeFunction! KODE ASLI:', c);
+                interceptedCode = c;
             });
         } catch (e) {
             // Abaikan jika sudah terekspos sebelumnya
         }
 
-        const code = await client.requestPairingCode(formattedPhone);
+        let code = await client.requestPairingCode(formattedPhone);
+        if (!code && interceptedCode) {
+             code = interceptedCode;
+        }
+        
         console.log('✅ KODE PAIRING BERHASIL DIDAPATKAN:', code);
         res.json({ code });
     } catch (err) {
