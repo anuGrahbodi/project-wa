@@ -147,7 +147,6 @@ function createClient() {
     });
 
     client.on('qr', async (qr) => {
-        if (phoneLoginMode) return; // Abaikan QR jika sedang dalam mode nomor HP
         qrcode.generate(qr, { small: true });
         try {
             latestQrDataUrl = await QRCode.toDataURL(qr, { width: 300 });
@@ -156,7 +155,6 @@ function createClient() {
             console.error('Gagal generate QR image:', err);
         }
     });
-
     client.on('authenticated', () => {
         console.log('🔐 Authenticated! Memuat data session...');
     });
