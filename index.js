@@ -9,47 +9,73 @@ const nodemailer = require('nodemailer');
 const { exec } = require('child_process');
 
 async function sendLogoutAlert() {
-    let webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-    if (!webhookUrl) {
-        console.log('⚠️ Discord alert dilewati karena DISCORD_WEBHOOK_URL belum diatur di .env');
-        return;
-    }
-    webhookUrl = webhookUrl.trim();
-    
     const publicUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
-    
-    const payload = {
-        content: "🚨 **WHATSAPP DISCONNECTED** 🚨\n\nMesin menyadari bahwa sesi WhatsApp Anda terlempar atau kehilangan koneksi. Segera lakukan pengecekan.\n\n@everyone",
-        username: "WhatsApp Bot Monitor",
-        avatar_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/512px-WhatsApp.svg.png",
-        embeds: [
-            {
+
+    // === 1. KIRIM DISCORD WEBHOOK ===
+    let webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    if (webhookUrl) {
+        webhookUrl = webhookUrl.trim();
+        const payload = {
+            content: "🚨 **WHATSAPP DISCONNECTED** 🚨\n\nMesin menyadari bahwa sesi WhatsApp Anda terlempar atau kehilangan koneksi. Segera lakukan pengecekan.\n\n@everyone",
+            username: "WhatsApp Bot Monitor",
+            avatar_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/512px-WhatsApp.svg.png",
+            embeds: [{
                 title: "⚠️ Peringatan: Bot WhatsApp Terputus (Logout)",
                 description: "**Status:** Disconnected / Auth Failure\n\nSistem Google Cloud mendeteksi bahwa Bot WhatsApp Anda telah terputus (logout). Jadwal pesan otomatis Anda mungkin gagal terkirim.\n\nSilakan segera hubungkan kembali nomor WhatsApp Anda dengan mengklik tautan Login di bawah ini dan memindai QR Code.",
                 color: 15158332,
-                fields: [
-                    {
-                        name: "🔗 Tautan Buka Dashboard",
-                        value: `[Klik di sini untuk Buka System](${publicUrl})`
-                    }
-                ],
-                footer: {
-                    text: "Diklaim dan dikirim secara otomatis oleh WhatsApp Bot Security."
-                },
+                fields: [{ name: "🔗 Tautan Buka Dashboard", value: `[Klik di sini untuk Buka System](${publicUrl})` }],
+                footer: { text: "Diklaim dan dikirim secara otomatis oleh WhatsApp Bot Security." },
                 timestamp: new Date().toISOString()
-            }
-        ]
-    };
+            }]
+        };
+        try {
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            console.log('💬 Berhasil mengirim peringatan logout ke Discord!');
+        } catch (err) {
+            console.error('❌ Gagal mengirim Discord alert:', err.message);
+        }
+    } else {
+        console.log('⚠️ Discord alert dilewati karena DISCORD_WEBHOOK_URL belum diatur.');
+    }
 
-    try {
-        await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        console.log('💬 Berhasil mengirim peringatan logout ke Discord!');
-    } catch (err) {
-        console.error('❌ Gagal mengirim Discord alert:', err.message);
+    // === 2. KIRIM EMAIL ALERT ===
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+    if (emailUser && emailPass) {
+        try {
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: { user: emailUser.trim(), pass: emailPass.trim() }
+            });
+            await transporter.sendMail({
+                from: `"Bot Security" <${emailUser.trim()}>`,
+                to: emailUser.trim(),
+                subject: '🚨 URGENT: Bot WhatsApp Terputus (Logout)!',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                        <h2 style="color: #d9534f; text-align: center;">Peringatan: WhatsApp Disconnected</h2>
+                        <hr>
+                        <p><strong>Status:</strong> Disconnected / Auth Failure</p>
+                        <p>Sistem memantau bahwa Bot WhatsApp Anda <strong>terputus</strong> dari VM. Semua jadwal otomatis dan API pengiriman pesan berhenti beroperasi saat ini.</p>
+                        <p>Silakan segera login ulang untuk mengaktifkan kembali bot.</p>
+                        <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+                            <a href="${publicUrl}" style="background-color: #008b5e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">Buka Dashboard Web</a>
+                        </div>
+                        <hr>
+                        <p style="font-size: 12px; color: #888; text-align: center;">Dikirim secara otomatis oleh Sistem Keamanan Bot WhatsApp.</p>
+                    </div>
+                `
+            });
+            console.log('📧 Berhasil mengirim peringatan logout ke Email!');
+        } catch (err) {
+            console.error('❌ Gagal mengirim Email alert:', err.message);
+        }
+    } else {
+        console.log('⚠️ Email alert dilewati karena EMAIL_USER/EMAIL_PASS belum diatur.');
     }
 }
 const app = express();
