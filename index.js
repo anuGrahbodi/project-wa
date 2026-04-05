@@ -459,6 +459,16 @@ app.post('/api/login/pair', async (req, res) => {
         if (formattedPhone.startsWith('0')) formattedPhone = '62' + formattedPhone.substring(1);
 
         console.log('📱 Meminta pairing code untuk:', formattedPhone);
+        
+        // SUNTIKKAN FUNGSI PENYELAMAT: whatsapp-web.js lupa mengekspos fungsi ini jika tidak dideklarasi di awal
+        try {
+            await client.pupPage.exposeFunction('onCodeReceivedEvent', (code) => {
+                console.log('Intercepted via exposeFunction!');
+            });
+        } catch (e) {
+            // Abaikan jika sudah terekspos sebelumnya
+        }
+
         const code = await client.requestPairingCode(formattedPhone);
         console.log('✅ KODE PAIRING BERHASIL DIDAPATKAN:', code);
         res.json({ code });
